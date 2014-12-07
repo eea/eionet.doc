@@ -5,14 +5,17 @@ package eionet.doc.dto;
 
 import java.io.FileInputStream;
 import java.io.Serializable;
+import java.lang.Math;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.stripes.action.FileBean;
 
 /**
- * @author Risto Alt
+ * Data Transfer Object for documentation page. This object is filled directly
+ * by Stripes.
  *
+ * @author Risto Alt
  */
 public class DocPageDTO implements Serializable {
 
@@ -25,7 +28,7 @@ public class DocPageDTO implements Serializable {
     private List<DocumentationDTO> docs;
 
     /**
-     * Properties for documentation add page
+     * Properties for documentation add page.
      */
     private String pid;
     private FileBean file;
@@ -37,6 +40,7 @@ public class DocPageDTO implements Serializable {
     private FileInputStream fis;
     private List<String> docIds = new ArrayList<String>();
 
+    /** System messages to show the user. */
     private List<MessageDTO> messages = new ArrayList<MessageDTO>();
 
     public String getContent() {
@@ -59,8 +63,21 @@ public class DocPageDTO implements Serializable {
         return pid;
     }
 
+    /**
+     * Set the page id. Cuts the page id at '/', '\' and ':' as these are path
+     * separators in some systems. The DocumentationService uses the Pid to fetch
+     * a file in the filesystem.
+     *
+     * @param pid - page id.
+     */
     public void setPid(String pid) {
-        this.pid = pid;
+        if (pid == null) {
+            this.pid = null;
+        } else {
+            int fnPart = Math.max(Math.max(pid.lastIndexOf('/'), pid.lastIndexOf('\\')),
+                    pid.lastIndexOf(':')) + 1;
+            this.pid = pid.substring(fnPart);
+        }
     }
 
     public FileBean getFile() {

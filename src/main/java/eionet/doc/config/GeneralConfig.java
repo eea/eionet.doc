@@ -70,7 +70,7 @@ public class GeneralConfig {
 
     /**
      *
-     * @param name
+     * @param key
      * @return
      */
     public static synchronized String getProperty(String key) {

@@ -26,9 +26,9 @@ import eionet.doc.dto.MessageDTO;
 public class DocumentationService {
 
     /**
-     * @param pageId
-     * @param event
-     * @return FileService
+     * Factory.
+     *
+     * @return new instance of DocumentationService.
      */
     public static DocumentationService getInstance() throws Exception {
         return new DocumentationService();
@@ -82,7 +82,8 @@ public class DocumentationService {
     }
 
     /**
-     * Edit page
+     * Edit page.
+     *
      * @param pageObject
      * @param isVirtuoso - does the application uses Virtuoso DB or MySql
      * @throws Exception
@@ -97,7 +98,8 @@ public class DocumentationService {
     }
 
     /**
-     * Adds content into documentation table
+     * Adds content into documentation table.
+     *
      * @param pageObject
      * @param isVirtuoso - does the application uses Virtuoso DB or MySql
      * @throws Exception
@@ -114,7 +116,8 @@ public class DocumentationService {
     }
 
     /**
-     * Insert content into database
+     * Insert content into database.
+     *
      * @param pageObject
      * @param isVirtuoso - does the application uses Virtuoso DB or MySql
      * @throws Exception
@@ -167,9 +170,9 @@ public class DocumentationService {
     }
 
     /**
-     * Deletes content
+     * Deletes content.
      *
-     * @param docIds
+     * @param pageObject
      * @throws Exception
      */
     public void delete(DocPageDTO pageObject) throws Exception {

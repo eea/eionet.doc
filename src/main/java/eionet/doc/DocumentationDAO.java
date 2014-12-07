@@ -16,8 +16,9 @@ import eionet.doc.config.GeneralConfig;
 import eionet.doc.dto.DocumentationDTO;
 
 /**
- * @author Risto Alt
+ * Data Access Object for documentation page.
  *
+ * @author Risto Alt
  */
 public class DocumentationDAO {
 
@@ -49,7 +50,7 @@ public class DocumentationDAO {
      */
     public DocumentationDTO getDocObject(String pageId) throws Exception {
 
-        String docObjectSQL = "select content_type, title from documentation where page_id = ?";
+        String docObjectSQL = "SELECT content_type, title FROM documentation WHERE page_id = ?";
 
         DocumentationDTO ret = null;
         Connection conn = null;
@@ -88,9 +89,9 @@ public class DocumentationDAO {
      */
     public List<DocumentationDTO> getDocObjects(boolean htmlOnly) throws Exception {
 
-        String docObjectSQL = "select page_id, content_type, title from documentation";
+        String docObjectSQL = "SELECT page_id, content_type, title FROM documentation";
         if (htmlOnly) {
-            docObjectSQL = docObjectSQL + " where content_type='text/html' OR content_type='uploaded_text/html'";
+            docObjectSQL = docObjectSQL + " WHERE content_type='text/html' OR content_type='uploaded_text/html'";
         }
 
         List<DocumentationDTO> ret = new ArrayList<DocumentationDTO>();
@@ -126,23 +127,37 @@ public class DocumentationDAO {
     }
 
     /**
-     * @see eionet.doc.dao.DocumentationDAO#insertContent(java.lang.String, java.lang.String, java.lang.String)
+     * Insert a record into the documentation table.
+     *
+     * @param isVirtuoso - not used
      */
+    @Deprecated
     public void insertContent(String pageId, String contentType, String title, boolean isVirtuoso) throws Exception {
+        insertContent(pageId, contentType, title);
+    }
+
+    /**
+     * Insert a record into the documentation table.
+     * Deletes any record that might already exist.
+     */
+    public void insertContent(String pageId, String contentType, String title) throws Exception {
 
         Connection conn = null;
         PreparedStatement ps = null;
         try {
             conn = getSQLConnection();
-            if (isVirtuoso) {
-                ps = conn.prepareStatement("INSERT REPLACING documentation VALUES (?, ?, ?)");
-            } else {
-                ps = conn.prepareStatement("INSERT IGNORE documentation VALUES (?, ?, ?)");
-            }
+            conn.setAutoCommit(false);
+            ps = conn.prepareStatement("DELETE FROM documentation WHERE page_id = ?");
+            ps.setString(1, pageId);
+            ps.executeUpdate();
+
+            ps = conn.prepareStatement("INSERT INTO documentation VALUES (?, ?, ?)");
             ps.setString(1, pageId);
             ps.setString(2, contentType);
             ps.setString(3, title);
             ps.executeUpdate();
+            conn.commit();
+            conn.setAutoCommit(true);
         } catch (Exception e) {
             throw new Exception(e.toString(), e);
         } finally {
@@ -157,7 +172,7 @@ public class DocumentationDAO {
      */
     public boolean idExists(String pageId) throws Exception {
 
-        String docObjectSQL = "select page_id from documentation where page_id = ?";
+        String docObjectSQL = "SELECT page_id FROM documentation WHERE page_id = ?";
 
         boolean ret = false;
         Connection conn = null;

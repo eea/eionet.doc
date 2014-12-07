@@ -1,33 +1,52 @@
 package eionet.doc;
 
 import static org.junit.Assert.assertEquals;
-import org.junit.Ignore;
-import org.junit.Test;
-import java.io.InputStream;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import eionet.doc.config.GeneralConfig;
 
 public class FileServiceTest {
 
-    @Test
-    public void happyPath() throws Exception {
-        String testData = "atest\n";
-        ByteArrayInputStream testInput = new ByteArrayInputStream(testData.getBytes("utf8"));
+    private String fileStore;
+    private String testData = "atest\n";
+    private ByteArrayInputStream testInput;
+    private FileService fs;
 
-        FileService fs = FileService.getInstance();
-        fs.addFile("testfile.txt", testInput);
-        File f = fs.getFile("testfile.txt");
-        assertEquals("target/filestore/testfile.txt", f.toString());
+    @Before
+    public void setUp() throws Exception {
+        fileStore = GeneralConfig.getRequiredProperty(GeneralConfig.FILESTORE_PATH);
+        testInput = new ByteArrayInputStream(testData.getBytes("utf8"));
+        fs = FileService.getInstance();
     }
 
-    @Ignore("There is no guard against abuse") @Test
-    public void tryAbuse() throws Exception {
-        String testData = "atest\n";
-        ByteArrayInputStream testInput = new ByteArrayInputStream(testData.getBytes("utf8"));
+    @Test
+    public void happyPath() throws Exception {
+        fs.addFile("testfile.txt", testInput);
+        File f = fs.getFile("testfile.txt");
+        assertNotNull(f);
+        assertEquals(fileStore, f.getParent());
+        assertEquals("testfile.txt", f.getName());
+    }
 
-        FileService fs = FileService.getInstance();
+    /**
+     * It must not be possible for an attacker to place a file on the server at
+     * location that is different from the file store.
+     */
+    @Ignore("There is no guard against abuse at this level")
+    @Test
+    public void tryAbuse() throws Exception {
         fs.addFile("../abusefile.txt", testInput);
         File f = fs.getFile("../abusefile.txt");
-        assertEquals("target/filestore/abusefile.txt", f.toString());
+
+        assertNotNull(f);
+        assertEquals(fileStore, f.getParent());
+        assertEquals("abusefile.txt", f.getName());
     }
 }
