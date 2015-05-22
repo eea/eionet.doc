@@ -5,7 +5,7 @@
     <groupId>eionet</groupId>
     <artifactId>documentation</artifactId>
     <version>2.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
     <name>documentation</name>
 
     <properties>
@@ -13,6 +13,11 @@
         <java_version>1.6</java_version>
         <spring.version>3.2.13.RELEASE</spring.version>
     </properties>
+
+    <modules>
+        <module>documentation.core</module>
+        <module>documentation.extensions.stripes</module>
+    </modules>
 
     <distributionManagement>
         <repository>
@@ -57,79 +62,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <!--  dependencies -->
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.4</version>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.13</version>
-        </dependency>
-        <!-- TEST dependencies -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>${spring.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>1.3.171</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.6</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-mxj</artifactId>
-            <version>5.0.12</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-mxj-db-files</artifactId>
-            <version>5.0.12</version>
-            <scope>test</scope>
-        </dependency>
-
-    </dependencies>
 
   </project>
