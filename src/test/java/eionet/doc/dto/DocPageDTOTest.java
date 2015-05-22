@@ -1,11 +1,7 @@
 package eionet.doc.dto;
 
 import static org.junit.Assert.assertEquals;
-import org.junit.Ignore;
 import org.junit.Test;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 
 public class DocPageDTOTest {
 

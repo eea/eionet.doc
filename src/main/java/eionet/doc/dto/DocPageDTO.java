@@ -1,19 +1,13 @@
-/**
- *
- */
 package eionet.doc.dto;
 
 import java.io.FileInputStream;
 import java.io.Serializable;
-import java.lang.Math;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sourceforge.stripes.action.FileBean;
-
 /**
- * Data Transfer Object for documentation page. This object is filled directly
- * by Stripes.
+ * Data Transfer Object for documentation page. This object SHOULD NOT be filled directly
+ * by Stripes. Actually it should not have anything to do with Stripes, at all.-
  *
  * @author Risto Alt
  */
@@ -31,7 +25,7 @@ public class DocPageDTO implements Serializable {
      * Properties for documentation add page.
      */
     private String pid;
-    private FileBean file;
+    private FileInfo file;
     private String contentType;
     private String title;
 
@@ -80,11 +74,11 @@ public class DocPageDTO implements Serializable {
         }
     }
 
-    public FileBean getFile() {
+    public FileInfo getFile() {
         return file;
     }
 
-    public void setFile(FileBean file) {
+    public void setFile(FileInfo file) {
         this.file = file;
     }
 

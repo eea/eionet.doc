@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @author Risto Alt
  *
  */
-public class DocumentationDTO implements Serializable {
+public final class DocumentationDTO implements Serializable {
 
     /**
      * serial
@@ -20,6 +20,14 @@ public class DocumentationDTO implements Serializable {
     private String contentType;
     private String title;
 
+    public DocumentationDTO() { } 
+    
+    public DocumentationDTO(String pageId, String contentType, String title) {
+        this.setPageId(pageId);
+        this.setContentType(contentType);
+        this.setTitle(title);
+    }
+    
     public String getPageId() {
         return pageId;
     }
