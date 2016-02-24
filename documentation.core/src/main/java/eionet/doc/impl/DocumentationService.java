@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 public final class DocumentationService implements eionet.doc.DocumentationService {
 
     private final FileService fileService;
-    
+
     private final DocumentationRepository documentationRepository;
 
     @Autowired
@@ -35,88 +35,69 @@ public final class DocumentationService implements eionet.doc.DocumentationServi
         this.documentationRepository = documentationRepository;
         this.fileService = fileService;
     }
-    
+
     @Override
     public DocPageDTO view(String pageId, String event) throws Exception {
         DocPageDTO ret = new DocPageDTO();
-        
+
         if (StringUtils.isBlank(pageId) || (pageId != null && pageId.equals("contents"))) {
             if (pageId != null && pageId.equals("contents")) {
                 ret.setDocs(this.documentationRepository.getDocObjects(false));
-            } 
-            else {
+            } else {
                 ret.setDocs(this.documentationRepository.getDocObjects(true));
             }
-        } 
-        else {
+        } else {
             DocumentationDTO doc = this.documentationRepository.getDocObject(pageId);
-            
+
             if (doc == null) {
                 ret.getMessages().add(new MessageDTO("Such page ID doesn't exist in database: " + pageId, MessageDTO.CAUTION));
-            } 
-            else {
-                if (!StringUtils.isBlank(event) && event.equals("edit")) {
-                    ret.setContentType(doc.getContentType());
-                    ret.setTitle(doc.getTitle());
-                    
-                    if (doc.getContentType().startsWith("text/")) {
-                        File f = this.fileService.getFile(pageId);
-                        
-                        if (f != null) {
-                            ret.setContent(FileUtils.readFileToString(f, "UTF-8"));
-                            ret.setEditableContent(true);
-                        } 
-                        else {
-                            ret.getMessages().add(new MessageDTO("File does not exist: " + pageId, MessageDTO.CAUTION));
-                        }
-                    }
-                } 
-                else {
-                    if (doc.getContentType().startsWith("text/")) {
-                        File f = this.fileService.getFile(pageId);
-                        
-                        if (f != null) {
-                            ret.setContent(FileUtils.readFileToString(f, "UTF-8"));
-                        } 
-                        else {
-                            ret.getMessages().add(new MessageDTO("File does not exist: " + pageId, MessageDTO.CAUTION));
-                        }
-                        
-                        ret.setTitle(doc.getTitle());
-                    } 
-                    else {
-                        File f = this.fileService.getFile(pageId);
-                        ret.setContentType(doc.getContentType());
-                        ret.setFis(new FileInputStream(f));
+            } else if (!StringUtils.isBlank(event) && event.equals("edit")) {
+                ret.setContentType(doc.getContentType());
+                ret.setTitle(doc.getTitle());
+
+                if (doc.getContentType().startsWith("text/")) {
+                    File f = this.fileService.getFile(pageId);
+
+                    if (f != null) {
+                        ret.setContent(FileUtils.readFileToString(f, "UTF-8"));
+                        ret.setEditableContent(true);
+                    } else {
+                        ret.getMessages().add(new MessageDTO("File does not exist: " + pageId, MessageDTO.CAUTION));
                     }
                 }
+            } else if (doc.getContentType().startsWith("text/")) {
+                File f = this.fileService.getFile(pageId);
+
+                if (f != null) {
+                    ret.setContent(FileUtils.readFileToString(f, "UTF-8"));
+                } else {
+                    ret.getMessages().add(new MessageDTO("File does not exist: " + pageId, MessageDTO.CAUTION));
+                }
+
+                ret.setTitle(doc.getTitle());
+            } else {
+                File f = this.fileService.getFile(pageId);
+                ret.setContentType(doc.getContentType());
+                ret.setFis(new FileInputStream(f));
             }
         }
-        
+
         return ret;
     }
 
     @Override
     public void editContent(DocPageDTO pageObject) throws Exception {
         if (pageObject != null) {
-            if (pageObject.getTitle() == null) {
-                pageObject.setTitle("");
-            }
-            
-            this.insertContent(pageObject);
+            this.insertContent(pageObject, true);
         }
     }
 
     @Override
-    public void addContent(DocPageDTO pageObject) throws Exception {
+    public String addContent(DocPageDTO pageObject) throws Exception {
         if (pageObject != null) {
-            // The page title is not mandatory. If it is not filled in, then it takes the value of the page_id.
-            if (StringUtils.isBlank(pageObject.getTitle())) {
-                pageObject.setTitle(pageObject.getPid());
-            }
-            
-            this.insertContent(pageObject);
+            return this.insertContent(pageObject, false);
         }
+        return null;
     }
 
     @Override
@@ -130,60 +111,86 @@ public final class DocumentationService implements eionet.doc.DocumentationServi
             }
         }
     }
-    
-    private void insertContent(DocPageDTO pageObject) throws Exception {
+
+    private String insertContent(DocPageDTO pageObject, boolean isEdit) throws Exception {
         String pid = pageObject.getPid();
         String title = pageObject.getTitle();
         String contentType = pageObject.getContentType();
         String content = pageObject.getContent();
         FileInfo file = pageObject.getFile();
 
-        // Extract file name.
-        String fileName = pid;
-        if (file != null && file.getFileName() != null) {
-            if (StringUtils.isBlank(pid)) {
-                fileName = file.getFileName();
-                pid = fileName;
-                // If title is still empty, then set it to file name
-                if (StringUtils.isBlank(title)) {
-                    title = fileName;
-                }
-            }
+        String fileName = setFileName(file, pid);
+
+        if (StringUtils.isBlank(pid)) {
+            pid = setPid(file);
         }
 
-        // If content type is not filled in, then it takes the content-type of the file.
-        // If that's not available, then it is application/octet-stream.
-        // If file is null the the content-type is "text/html"
+        if (StringUtils.isBlank(title)) {
+            title = setTitle(title, pid, isEdit);
+        }
+
         if (StringUtils.isBlank(contentType)) {
-            if (file != null) {
-                contentType = file.getContentType();
-                if (StringUtils.isBlank(contentType)) {
-                    contentType = "application/octet-stream";
-                }
-            } else {
-                contentType = "text/html";
-            }
+            contentType = setContentType(file);
         }
 
         DocumentationDTO documentation = new DocumentationDTO(pid, contentType, title);
         InputStream is = null;
-        
+
         try {
             if (file != null) {
                 is = file.getInputStream();
-            } 
-            else if (content != null) {
+                this.fileService.addFile(fileName, is);
+            } else if (content != null) {
                 is = new ByteArrayInputStream(content.getBytes("UTF-8"));
-            } 
-            else {
+                this.fileService.addFile(fileName, is);
+            } else if (!isEdit) {
                 is = new ByteArrayInputStream("".getBytes());
+                this.fileService.addFile(fileName, is);
             }
-        
-            this.fileService.addFile(fileName, is);
+
             this.documentationRepository.insertContent(documentation);
-        }
-        finally {
+        } finally {
             IOUtils.closeQuietly(is);
+        }
+        return pid;
+
+    }
+
+    private String setFileName(FileInfo file, String pid) throws Exception {
+        if (file != null && file.getFileName() != null && StringUtils.isBlank(pid)) {
+            return file.getFileName();
+        } else if (!StringUtils.isBlank(pid)) {
+            return pid;
+        } else {
+            throw new Exception("Both file and pid not specified!");
+        }
+    }
+
+    private String setPid(FileInfo file) throws Exception {
+        if (file != null && file.getFileName() != null) {
+            return file.getFileName();
+        } else {
+            throw new Exception("Both file and pid not specified!");
+        }
+    }
+
+    private String setTitle(String title, String pid, boolean isEdit) {
+        if (!isEdit) {
+            return pid;
+        } else if (title == null) {
+            return "";
+        } else {
+            return title;
+        }
+    }
+
+    private String setContentType(FileInfo file) {
+        if (file != null && StringUtils.isEmpty(file.getContentType())) {
+            return "application/octet-stream";
+        } else if (file != null) {
+            return file.getContentType();
+        } else {
+            return "text/html";
         }
     }
 

@@ -21,9 +21,10 @@ public interface DocumentationService {
      * Adds content into documentation table.
      *
      * @param pageObject
+     * @return pageObject.pid
      * @throws Exception
      */
-    public void addContent(DocPageDTO pageObject) throws Exception;
+    public String addContent(DocPageDTO pageObject) throws Exception;
 
     /**
      * Deletes content.
