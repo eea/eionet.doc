@@ -20,6 +20,13 @@
     </modules>
 
     <distributionManagement>
+
+   <repository>
+     <id>github</id>
+     <name>Internal Release Repository</name>
+     <url>https://maven.pkg.github.com/eea/maven-repo</url>
+   </repository>
+<!--
         <repository>
             <id>archiva.internal</id>
             <name>Internal Release Repository</name>
@@ -30,6 +37,7 @@
             <name>Internal Snapshot Repository</name>
             <url>http://archiva.eionet.europa.eu/repository/snapshots/</url>
         </snapshotRepository>
+-->
     </distributionManagement>
 
     <build>
